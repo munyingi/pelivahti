@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/munyingi/pelivahti/contracts/v1/odds_changed.json",
+  "title": "odds_changed",
+  "description": "The trading desk moved the decimal odds of one selection.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "schema_version",
+    "event_time",
+    "event_type",
+    "match_id",
+    "selection",
+    "odds"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "event_time": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$"
+    },
+    "event_type": {
+      "const": "odds_changed"
+    },
+    "match_id": {
+      "type": "string",
+      "pattern": "^M\\d{5}$"
+    },
+    "selection": {
+      "enum": [
+        "home",
+        "draw",
+        "away"
+      ]
+    },
+    "odds": {
+      "type": "number",
+      "exclusiveMinimum": 1.0,
+      "maximum": 1000
+    }
+  }
+}

@@ -1,0 +1,70 @@
+version: 2
+
+models:
+  - name: dim_players
+    description: One row per player with current limits, self-exclusion and a risk tier from real-time alerts.
+    columns:
+      - name: player_id
+        data_tests: [unique, not_null]
+      - name: risk_tier
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [green, amber, red]
+  - name: dim_matches
+    columns:
+      - name: match_id
+        data_tests: [unique, not_null]
+  - name: fct_sports_bets
+    description: Every sports bet with its final settlement (after result corrections).
+    columns:
+      - name: bet_id
+        data_tests: [unique, not_null]
+      - name: status
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [open, won, lost, void]
+      - name: return_eur
+        data_tests: [non_negative]
+      - name: player_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_players')
+                field: player_id
+  - name: fct_casino_rounds
+    columns:
+      - name: round_id
+        data_tests: [unique, not_null]
+  - name: fct_ggr_daily
+    description: Gross gaming revenue per Helsinki business day and product.
+    data_tests:
+      - unique_combination_of_columns:
+          arguments:
+            columns: [business_date, product]
+  - name: fct_lottery_tax_monthly
+    description: Estimated 22% lottery tax on positive monthly GGR per product. Illustrative only.
+    columns:
+      - name: tax_eur
+        data_tests: [non_negative]
+  - name: fct_player_daily
+    description: Batch truth per player per Helsinki day, including late events.
+    data_tests:
+      - unique_combination_of_columns:
+          arguments:
+            columns: [player_id, business_date]
+  - name: fct_rg_alerts
+    columns:
+      - name: alert_id
+        data_tests: [unique, not_null]
+      - name: severity
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [critical, high, medium, low]
+  - name: fct_odds_movement
+    data_tests:
+      - unique_combination_of_columns:
+          arguments:
+            columns: [match_id, selection]

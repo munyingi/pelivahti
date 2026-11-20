@@ -1,0 +1,57 @@
+version: 2
+
+models:
+  - name: stg_events
+    description: Every valid event from bronze, one row per event_id, timestamps as naive UTC.
+    columns:
+      - name: event_id
+        data_tests: [unique, not_null]
+      - name: event_type
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [player_registered, limit_changed, self_exclusion_set, deposit, withdrawal,
+                         match_scheduled, odds_changed, bet_placed, match_result, casino_round]
+  - name: stg_players
+    columns:
+      - name: player_id
+        data_tests: [unique, not_null]
+  - name: stg_bets
+    columns:
+      - name: bet_id
+        data_tests: [unique, not_null]
+      - name: stake_eur
+        data_tests: [not_null, non_negative]
+      - name: match_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_matches')
+                field: match_id
+              config:
+                severity: warn  # orphans appear when a match_scheduled message was dead-lettered
+  - name: stg_casino_rounds
+    columns:
+      - name: round_id
+        data_tests: [unique, not_null]
+      - name: win_eur
+        data_tests: [non_negative]
+  - name: stg_deposits
+    columns:
+      - name: transaction_id
+        data_tests: [unique, not_null]
+  - name: stg_withdrawals
+    columns:
+      - name: transaction_id
+        data_tests: [unique, not_null]
+  - name: stg_matches
+    columns:
+      - name: match_id
+        data_tests: [unique, not_null]
+  - name: stg_match_results
+    columns:
+      - name: outcome
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [home, draw, away, void]

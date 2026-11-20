@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/munyingi/pelivahti/contracts/v1/match_scheduled.json",
+  "title": "match_scheduled",
+  "description": "A sports match was published for betting.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "schema_version",
+    "event_time",
+    "event_type",
+    "match_id",
+    "sport",
+    "league",
+    "home_team",
+    "away_team",
+    "kickoff_time"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "event_time": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$"
+    },
+    "event_type": {
+      "const": "match_scheduled"
+    },
+    "match_id": {
+      "type": "string",
+      "pattern": "^M\\d{5}$"
+    },
+    "sport": {
+      "enum": [
+        "football",
+        "ice_hockey",
+        "basketball"
+      ]
+    },
+    "league": {
+      "type": "string"
+    },
+    "home_team": {
+      "type": "string"
+    },
+    "away_team": {
+      "type": "string"
+    },
+    "kickoff_time": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$"
+    }
+  }
+}

@@ -1,0 +1,13 @@
+pelivahti:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "{{ env_var('PELIVAHTI_WAREHOUSE', '../data/warehouse.duckdb') }}"
+      threads: 4
+      plugins:
+        - module: delta
+      attach:
+        - path: "{{ env_var('PELIVAHTI_REALTIME', '../data/realtime.duckdb') }}"
+          alias: realtime
+          read_only: true

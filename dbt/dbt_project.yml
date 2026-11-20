@@ -1,0 +1,26 @@
+name: pelivahti
+version: "1.0.0"
+config-version: 2
+profile: pelivahti
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+analysis-paths: ["analyses"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+vars:
+  lottery_tax_rate: 0.22   # tax on gambling margin for licensed operators from 1 July 2027
+
+models:
+  pelivahti:
+    +materialized: table
+    staging:
+      +schema: staging
+    intermediate:
+      +schema: intermediate
+    marts:
+      +schema: marts
+    reports:
+      +schema: reports

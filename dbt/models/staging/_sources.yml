@@ -1,0 +1,35 @@
+version: 2
+
+sources:
+  - name: bronze
+    description: Delta Lake bronze layer written by `pelivahti land`. One row per unique event_id.
+    tables:
+      - name: events
+        meta:
+          plugin: delta
+          materialization: table
+          delta_table_path: "{{ env_var('PELIVAHTI_LAKE', '../data/lake') }}/bronze/events"
+      - name: dlq
+        description: Messages that broke their data contract.
+        meta:
+          plugin: delta
+          materialization: table
+          delta_table_path: "{{ env_var('PELIVAHTI_LAKE', '../data/lake') }}/bronze/dlq"
+      - name: ingest_log
+        meta:
+          plugin: delta
+          materialization: table
+          delta_table_path: "{{ env_var('PELIVAHTI_LAKE', '../data/lake') }}/bronze/ingest_log"
+
+  - name: realtime
+    description: Outputs of the stream engine (`pelivahti stream`), attached read-only.
+    database: realtime
+    schema: rt
+    tables:
+      - name: ledger
+      - name: alerts
+      - name: player_daily
+      - name: dlq
+      - name: late_events
+      - name: duplicates
+      - name: batches

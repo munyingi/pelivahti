@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/munyingi/pelivahti/contracts/v1/player_registered.json",
+  "title": "player_registered",
+  "description": "A player opened an account. Limits are the player's own daily and monthly net-loss limits in EUR.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "schema_version",
+    "event_time",
+    "event_type",
+    "player_id",
+    "birth_year",
+    "municipality",
+    "daily_loss_limit_eur",
+    "monthly_loss_limit_eur"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "event_time": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$"
+    },
+    "event_type": {
+      "const": "player_registered"
+    },
+    "player_id": {
+      "type": "string",
+      "pattern": "^P\\d{6}$"
+    },
+    "birth_year": {
+      "type": "integer",
+      "minimum": 1900,
+      "maximum": 2008
+    },
+    "municipality": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 40
+    },
+    "daily_loss_limit_eur": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 10000
+    },
+    "monthly_loss_limit_eur": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 50000
+    }
+  }
+}

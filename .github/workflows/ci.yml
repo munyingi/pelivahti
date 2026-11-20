@@ -1,0 +1,73 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: lint + unit and recovery tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -e ".[dev]"
+      - run: ruff check . && ruff format --check .
+      - run: pytest -q
+
+  pipeline:
+    name: full pipeline + dbt build + Dagster
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -e ".[orchestration]"
+      - name: generate -> Delta bronze -> stream -> dbt build (all tests)
+        run: pelivahti run-local --fresh
+      - name: data quality report
+        run: |
+          python - <<'PY'
+          import duckdb
+          con = duckdb.connect("data/warehouse.duckdb", read_only=True)
+          for metric, value, note in con.execute("select * from reports.rpt_data_quality").fetchall():
+              print(f"{metric:32} {value:>10}  {note}")
+          oob = con.execute("select count(*) from reports.rpt_realtime_vs_batch_ledger where diff_eur <> 0").fetchone()[0]
+          assert oob == 0, f"{oob} players out of balance"
+          PY
+      - name: Dagster definitions load
+        run: dagster definitions validate -m orchestration.definitions
+
+  kafka:
+    name: end-to-end through Redpanda
+    runs-on: ubuntu-latest
+    needs: test
+    env:
+      KAFKA_BOOTSTRAP: localhost:19092
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -e ".[dev]"
+      - run: docker compose up -d --wait redpanda
+      - name: broker integration tests
+        run: pytest -q -m kafka
+      - name: whole pipeline through the broker
+        run: |
+          pelivahti generate --players 300 --days 2
+          pelivahti produce --bootstrap $KAFKA_BOOTSTRAP
+          pelivahti land --bootstrap $KAFKA_BOOTSTRAP
+          pelivahti stream --bootstrap $KAFKA_BOOTSTRAP
+          pelivahti dbt build
+      - if: always()
+        run: docker compose down -v

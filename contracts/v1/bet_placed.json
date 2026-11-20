@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/munyingi/pelivahti/contracts/v1/bet_placed.json",
+  "title": "bet_placed",
+  "description": "A single pre-match bet on a 1X2 market.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "schema_version",
+    "event_time",
+    "event_type",
+    "player_id",
+    "bet_id",
+    "match_id",
+    "selection",
+    "odds",
+    "stake_eur",
+    "channel"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "event_time": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$"
+    },
+    "event_type": {
+      "const": "bet_placed"
+    },
+    "player_id": {
+      "type": "string",
+      "pattern": "^P\\d{6}$"
+    },
+    "bet_id": {
+      "type": "string",
+      "pattern": "^B\\d{8}$"
+    },
+    "match_id": {
+      "type": "string",
+      "pattern": "^M\\d{5}$"
+    },
+    "selection": {
+      "enum": [
+        "home",
+        "draw",
+        "away"
+      ]
+    },
+    "odds": {
+      "type": "number",
+      "exclusiveMinimum": 1.0,
+      "maximum": 1000
+    },
+    "stake_eur": {
+      "type": "number",
+      "minimum": 0.1,
+      "maximum": 5000
+    },
+    "channel": {
+      "enum": [
+        "web",
+        "app",
+        "retail"
+      ]
+    }
+  }
+}
