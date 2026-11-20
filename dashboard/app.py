@@ -97,7 +97,7 @@ def eur(x: float) -> str:
 # ---------------------------------------------------------------------------------------------- header
 st.title("Pelivahti")
 st.caption(
-    "Real-time betting settlement and responsible gaming monitoring for a Finnish-style operator. "
+    "Real-time betting settlement and responsible gaming monitoring for a regulated gambling operator. "
     "All players, bets and results are synthetic."
 )
 
@@ -113,14 +113,14 @@ tab_overview, tab_rg, tab_player, tab_dq, tab_odds = st.tabs(
 
 # ---------------------------------------------------------------------------------------------- overview
 with tab_overview:
-    tax = q("select * from marts.fct_lottery_tax_monthly")
+    tax = q("select * from marts.fct_gambling_tax_monthly")
     tax["tax_month"] = pd.to_datetime(tax["tax_month"]).dt.strftime("%Y-%m")
     tax_f = tax[tax["product"].isin(products)]
     alerts_total = q("select count(*) as n from marts.fct_rg_alerts where category = 'responsible_gaming'")["n"][0]
     c1, c2, c3, c4, c5 = st.columns(5)
     c1.metric("Turnover", eur(ggr_f["turnover_eur"].astype(float).sum()))
     c2.metric("Gross gaming revenue", eur(ggr_f["ggr_eur"].astype(float).sum()))
-    c3.metric("Estimated lottery tax (22%)", eur(tax_f["tax_eur"].astype(float).sum()))
+    c3.metric("Estimated gambling tax (22%)", eur(tax_f["tax_eur"].astype(float).sum()))
     c4.metric("Active players", f"{q('select count(distinct player_id) n from marts.fct_player_daily')['n'][0]:,}")
     c5.metric("Responsible gaming alerts", f"{alerts_total:,}")
 
@@ -133,7 +133,7 @@ with tab_overview:
             color="product",
             barmode="group",
             color_discrete_map=PRODUCT_COLORS,
-            title="GGR per Helsinki business day (EUR)",
+            title="GGR per business day (EUR)",
             hover_data={"turnover_eur": ":,.2f", "winnings_eur": ":,.2f", "hold_pct": ":.1%"},
         )
         fig.update_traces(marker_line_width=0)
@@ -154,11 +154,11 @@ with tab_overview:
         fig.update_xaxes(type="category")
         st.plotly_chart(style(fig), width="stretch")
 
-    st.subheader("Lottery tax estimate")
+    st.subheader("Gambling tax estimate")
     st.caption(
-        "From 1 July 2027 licensed betting and online casino operators in Finland pay lottery tax on the "
-        "gambling margin (stakes minus winnings). Modelled here as 22% of positive monthly GGR per product. "
-        "Illustrative only, not tax advice."
+        "Licensed betting and online casino operators typically pay tax on the gambling margin "
+        "(stakes minus winnings). Modelled here as 22% of positive monthly GGR per product; the rate is a dbt "
+        "variable. Illustrative only, not tax advice."
     )
     st.dataframe(tax_f, width="stretch", hide_index=True)
 
@@ -203,16 +203,16 @@ with tab_rg:
         fig.update_layout(showlegend=False, bargap=0.45)
         st.plotly_chart(style(fig, 380), width="stretch")
 
-    a["hour"] = pd.to_datetime(a["triggered_at_helsinki"]).dt.floor("h")
+    a["hour"] = pd.to_datetime(a["triggered_at_local"]).dt.floor("h")
     hourly = a.groupby("hour", as_index=False).size()
-    fig = px.line(hourly, x="hour", y="size", title="Alerts per hour (Helsinki time)")
+    fig = px.line(hourly, x="hour", y="size", title="Alerts per hour (local time)")
     fig.update_traces(line_width=2, line_color="#2a78d6")
     st.plotly_chart(style(fig, 280), width="stretch")
 
     st.subheader("Players to contact first")
     top = q("""
         select player_id, risk_tier, rg_alerts_critical as critical, rg_alerts_high as high,
-               rg_alerts_total as total, daily_loss_limit_eur, has_self_excluded, age_band, municipality
+               rg_alerts_total as total, daily_loss_limit_eur, has_self_excluded, age_band, region
         from marts.dim_players where risk_tier = 'red'
         order by rg_alerts_critical desc, rg_alerts_high desc, rg_alerts_total desc limit 25""")
     st.dataframe(top, width="stretch", hide_index=True)
@@ -256,8 +256,8 @@ with tab_player:
         st.markdown("**Alerts**")
         st.dataframe(
             q(
-                """select triggered_at_helsinki, rule, severity, details from marts.fct_rg_alerts
-                          where player_id = ? order by triggered_at_helsinki""",
+                """select triggered_at_local, rule, severity, details from marts.fct_rg_alerts
+                          where player_id = ? order by triggered_at_local""",
                 (pid,),
             ),
             width="stretch",
@@ -267,7 +267,7 @@ with tab_player:
         st.markdown("**Bets**")
         st.dataframe(
             q(
-                """select placed_at_helsinki, fixture, selection, odds, stake_eur, status, return_eur
+                """select placed_at_local, fixture, selection, odds, stake_eur, status, return_eur
                           from marts.fct_sports_bets where player_id = ? order by placed_at_utc""",
                 (pid,),
             ),
@@ -333,7 +333,7 @@ with tab_odds:
             [
                 "fixture",
                 "league",
-                "kickoff_helsinki",
+                "kickoff_local",
                 "final_outcome",
                 "result_corrected",
                 "n_bets",

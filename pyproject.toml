@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pelivahti"
 version = "1.0.0"
-description = "Real-time betting settlement and responsible gaming pipeline for a Finnish-style operator"
+description = "Real-time betting settlement and responsible gaming data pipeline for a regulated gambling operator"
 readme = "README.md"
 requires-python = ">=3.11"
 authors = [{ name = "Samwel Munyingi", email = "samwelmunyingi@gmail.com" }]

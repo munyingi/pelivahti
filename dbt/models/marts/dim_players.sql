@@ -38,7 +38,7 @@ select
         when 2026 - p.birth_year < 65 then '50-64'
         else '65+'
     end as age_band,
-    p.municipality,
+    p.region,
     p.registered_at_utc,
     l.daily_loss_limit_eur,
     l.monthly_loss_limit_eur,

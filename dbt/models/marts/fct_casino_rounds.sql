@@ -6,5 +6,5 @@ select
     stake_eur,
     win_eur,
     played_at_utc,
-    {{ helsinki_date('played_at_utc') }} as played_date
+    {{ local_date('played_at_utc') }} as played_date
 from {{ ref('stg_casino_rounds') }}

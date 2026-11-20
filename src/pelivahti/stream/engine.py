@@ -19,6 +19,7 @@ from __future__ import annotations
 import bisect
 import hashlib
 import json
+import os
 from collections import defaultdict, deque
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime, timedelta
@@ -28,7 +29,8 @@ from zoneinfo import ZoneInfo
 from ..contracts import validate
 from ..sources import Record
 
-HEL = ZoneInfo("Europe/Helsinki")
+# Business time zone for calendar days and night hours (PELIVAHTI_TIMEZONE, default EET).
+LOCAL_TZ = ZoneInfo(os.environ.get("PELIVAHTI_TIMEZONE", "EET"))
 D2 = Decimal("0.01")
 GAMING_ENTRIES = {"STAKE", "PAYOUT", "REFUND", "REVERSAL", "WIN"}
 
@@ -57,11 +59,11 @@ def naive(ts: datetime) -> datetime:
 
 
 def local_day(ts: datetime) -> date:
-    return ts.astimezone(HEL).date()
+    return ts.astimezone(LOCAL_TZ).date()
 
 
 def day_end_utc(day: date) -> datetime:
-    return datetime(day.year, day.month, day.day, tzinfo=HEL).astimezone(UTC) + timedelta(days=1)
+    return datetime(day.year, day.month, day.day, tzinfo=LOCAL_TZ).astimezone(UTC) + timedelta(days=1)
 
 
 @dataclass
@@ -339,7 +341,7 @@ class Engine:
         st.session_last = max(ts, st.session_last or ts)
         dur = st.session_last - st.session_start
         if dur >= self.cfg.night_session_min:
-            hours = {st.session_start.astimezone(HEL).hour, ts.astimezone(HEL).hour}
+            hours = {st.session_start.astimezone(LOCAL_TZ).hour, ts.astimezone(LOCAL_TZ).hour}
             if any(0 <= h < 5 for h in hours):
                 self._alert(
                     "NIGHT_MARATHON_SESSION",
@@ -394,7 +396,7 @@ class Engine:
         while st.deposits and ts - st.deposits[0] > self.cfg.deposit_velocity_window:
             st.deposits.popleft()
         if len(st.deposits) >= self.cfg.deposit_velocity_count:
-            bucket = ts.astimezone(HEL).strftime("%Y-%m-%dT%H")
+            bucket = ts.astimezone(LOCAL_TZ).strftime("%Y-%m-%dT%H")
             self._alert(
                 "DEPOSIT_VELOCITY",
                 pid,

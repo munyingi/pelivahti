@@ -12,7 +12,7 @@
     "event_type",
     "player_id",
     "birth_year",
-    "municipality",
+    "region",
     "daily_loss_limit_eur",
     "monthly_loss_limit_eur"
   ],
@@ -40,7 +40,7 @@
       "minimum": 1900,
       "maximum": 2008
     },
-    "municipality": {
+    "region": {
       "type": "string",
       "minLength": 2,
       "maxLength": 40

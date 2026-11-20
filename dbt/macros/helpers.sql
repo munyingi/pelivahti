@@ -1,10 +1,10 @@
-{# Naive UTC timestamp -> naive Europe/Helsinki wall-clock timestamp #}
-{% macro to_helsinki(ts) -%}
-    timezone('Europe/Helsinki', ({{ ts }}) at time zone 'UTC')
+{# Naive UTC timestamp -> naive wall-clock timestamp in the business time zone (var: business_timezone) #}
+{% macro to_local(ts) -%}
+    timezone('{{ var("business_timezone") }}', ({{ ts }}) at time zone 'UTC')
 {%- endmacro %}
 
-{% macro helsinki_date(ts) -%}
-    cast({{ to_helsinki(ts) }} as date)
+{% macro local_date(ts) -%}
+    cast({{ to_local(ts) }} as date)
 {%- endmacro %}
 
 {% macro money(expr) -%}

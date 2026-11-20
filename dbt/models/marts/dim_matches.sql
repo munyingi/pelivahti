@@ -16,7 +16,7 @@ select
     m.away_team,
     m.home_team || ' - ' || m.away_team as fixture,
     m.kickoff_utc,
-    {{ to_helsinki('m.kickoff_utc') }} as kickoff_helsinki,
+    {{ to_local('m.kickoff_utc') }} as kickoff_local,
     r.outcome as final_outcome,
     r.result_version,
     coalesce(r.was_corrected, false) as result_corrected,

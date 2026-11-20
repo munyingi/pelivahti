@@ -90,7 +90,7 @@ def test_late_event_is_booked_but_skips_windowed_rules(f):
 
 def test_daily_windows_close_when_the_watermark_passes_midnight(f):
     eng, out = run(f, [f.register(), f.spin("R000000001", stake=3, win=1), f.spin("R000000002", minutes=60 * 13)])
-    # 10:00 + 13 h = 23:00 UTC = 01:00 Helsinki next day, so the first Helsinki day is closed
+    # 10:00 + 13 h = 23:00 UTC = 01:00 local time next day, so the first local day is closed
     assert len(out.player_daily) == 1
     day = out.player_daily[0]
     assert str(day["day"]) == "2026-11-16" and day["net_loss"] == Decimal("2.00")
@@ -137,7 +137,7 @@ def test_loss_chasing(f):
 
 
 def test_night_marathon_session(f):
-    # 22:30 UTC = 00:30 Helsinki, play every 10 minutes for 100 minutes
+    # 22:30 UTC = 00:30 local time, play every 10 minutes for 100 minutes
     spins = [f.spin(f"R{i:09d}", minutes=12 * 60 + 30 + i * 10) for i in range(11)]
     _, out = run(f, [f.register(daily=10_000), *spins])
     assert "NIGHT_MARATHON_SESSION" in rules(out)

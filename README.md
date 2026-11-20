@@ -2,13 +2,13 @@
 
 [![ci](https://github.com/munyingi/pelivahti/actions/workflows/ci.yml/badge.svg)](https://github.com/munyingi/pelivahti/actions/workflows/ci.yml)
 
-*Pelivahti* is Finnish for "game watch". This project is the data platform behind a Finnish-style betting and online casino operator, similar to what Veikkaus runs: sports bets and casino rounds stream in, get settled into a wallet ledger in real time, are checked against responsible gaming rules within seconds, and land in a lakehouse that a dbt warehouse turns into revenue, tax and risk reporting.
+Pelivahti is the data platform behind a regulated sports betting and online casino operator. Sports bets and casino rounds stream in, get settled into a wallet ledger in real time, are checked against responsible gaming rules within seconds, and land in a lakehouse that a dbt warehouse turns into revenue, tax and player-risk reporting.
 
 Everything runs on free tools, on a laptop or in GitHub Actions. All players, bets and results are synthetic.
 
 📄 **[Read the 4-page case study (PDF)](docs/Pelivahti_case_study.pdf)** for the problem, architecture, design decisions and results.
 
-**Why this domain?** Finland ends Veikkaus' monopoly on online betting and casino games, and licensed operators may start on **1 July 2027**. Licensed gambling is taxed at **22% of the gambling margin** (stakes minus winnings). Every new operator will need exactly this: correct settlement, provable player protection and tax-ready numbers.
+**Why this domain?** Licensed gambling is one of the hardest places to get data wrong. Every bet moves real money, results get corrected after payout, and regulators expect operators to spot harmful play quickly and to report revenue and gambling tax (modelled here as **22% of the gambling margin**, stakes minus winnings) that they can prove. A licensed operator needs exactly this: correct settlement, provable player protection and tax-ready numbers.
 
 ![Revenue and tax](docs/images/01_revenue_and_tax.png)
 
@@ -58,7 +58,7 @@ Two independent consumers read the same events. The **stream engine** is the spe
 
 Ten event types, each with a JSON Schema contract in [`contracts/v1`](contracts/v1): `player_registered`, `limit_changed`, `self_exclusion_set`, `deposit`, `withdrawal`, `match_scheduled`, `odds_changed`, `bet_placed`, `match_result`, `casino_round`.
 
-The generator simulates 800 players over three days (about 87,000 messages): casual, regular and at-risk profiles, Liiga, Premier League and NBA fixtures with priced 1X2 markets and moving odds, a ~94.5% RTP casino, voided matches and corrected results. It then damages the stream on purpose, the way real transport does:
+The generator simulates 800 players over three days (about 79,000 messages): casual, regular and at-risk profiles, NHL, Premier League and NBA fixtures with priced 1X2 markets and moving odds, a ~94.5% RTP casino, voided matches and corrected results. It then damages the stream on purpose, the way real transport does:
 
 | Problem injected | Rate | How the pipeline handles it |
 |---|---|---|
@@ -73,11 +73,11 @@ The generator simulates 800 players over three days (about 87,000 messages): cas
 | Rule | Severity | Window |
 |---|---|---|
 | Played while self-excluded | critical | none (checked even for late events) |
-| Daily / monthly loss limit breached | high | Helsinki calendar day / month |
+| Daily / monthly loss limit breached | high | local calendar day / month |
 | Loss chasing: deposit within 10 min of a loss, then a stake of 2x the usual | high | 20 min after the deposit |
 | Rapid deposits: 3 or more in 15 minutes | medium | sliding 15 min |
 | Night marathon: a session of 90+ min touching 00:00 to 05:00 | medium | session window, 20 min gap |
-| 80% of the daily loss limit reached | low | Helsinki calendar day |
+| 80% of the daily loss limit reached | low | local calendar day |
 | Bet accepted at stale odds (operations) | medium | odds valid at bet time |
 
 Loss limits are effective-dated: lowering a limit applies at once, raising it waits 24 hours. Both the engine and the dbt model `int_player_limits` implement the same rule.
@@ -96,11 +96,11 @@ Each micro-batch commits **in one DuckDB transaction**: the ledger rows, alerts,
 staging       stg_events, stg_bets, stg_casino_rounds, stg_deposits, ... (one per event type)
 intermediate  int_match_final_results, int_bet_settlements, int_wallet_movements, int_player_limits
 marts         dim_players, dim_matches, fct_sports_bets, fct_casino_rounds, fct_ggr_daily,
-              fct_lottery_tax_monthly, fct_player_daily, fct_rg_alerts, fct_odds_movement
+              fct_gambling_tax_monthly, fct_player_daily, fct_rg_alerts, fct_odds_movement
 reports       rpt_realtime_vs_batch_ledger, rpt_realtime_vs_batch_daily, rpt_data_quality, ...
 ```
 
-GGR is counted per Helsinki business day: sports bets on their settlement day (void and open bets excluded), casino rounds on their play day. The tax mart applies 22% to positive monthly GGR per product. It is an illustration of the rule, not tax advice.
+GGR is counted per local business day (time zone set by `PELIVAHTI_TIMEZONE`, default EET): sports bets on their settlement day (void and open bets excluded), casino rounds on their play day. The tax mart applies 22% to positive monthly GGR per product. It is an illustration of the rule, not tax advice.
 
 Notable tests: the stream and batch ledgers reconcile per player and per bet, the GGR identity holds, tax equals rate times positive GGR, no bet is placed after kickoff, the stream never books a stake twice. `assert_every_daily_breach_was_alerted` is a **warning** on purpose: on the default seed it flags one player-day where late events pushed a player over the limit after the real-time window had closed. That gap is the cost of a 5-minute watermark, and the report makes it visible instead of hiding it.
 

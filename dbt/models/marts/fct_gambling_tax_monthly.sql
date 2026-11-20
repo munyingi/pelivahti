@@ -1,4 +1,4 @@
--- Estimated lottery tax under Finland's licensing regime: a share of the gambling margin
+-- Estimated gambling tax: a configurable share (var gambling_tax_rate) of the gambling margin
 -- (stakes minus winnings). A negative month gives no tax; it is not carried forward here.
 -- Illustrative only, not tax advice.
 with monthly as (
@@ -19,6 +19,6 @@ select
     {{ money('winnings_eur') }} as winnings_eur,
     {{ money('ggr_eur') }} as ggr_eur,
     {{ money('greatest(ggr_eur, 0)') }} as tax_base_eur,
-    {{ var('lottery_tax_rate') }} as tax_rate,
-    {{ money("round(greatest(ggr_eur, 0) * " ~ var('lottery_tax_rate') ~ ", 2)") }} as tax_eur
+    {{ var('gambling_tax_rate') }} as tax_rate,
+    {{ money("round(greatest(ggr_eur, 0) * " ~ var('gambling_tax_rate') ~ ", 2)") }} as tax_eur
 from monthly

@@ -1,4 +1,4 @@
--- Gross gaming revenue (GGR) = stakes - winnings, per Helsinki business day and product.
+-- Gross gaming revenue (GGR) = stakes - winnings, per local business day and product.
 -- Sports bets count on the day they settle; void and still-open bets are excluded.
 with sports as (
     select

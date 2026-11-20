@@ -3,7 +3,7 @@
     dagster dev -m orchestration.definitions
 
 Asset graph: raw_events -> bronze_events (Delta) -> realtime_outputs (stream engine) -> dbt models.
-A daily schedule rebuilds everything at 06:15 Helsinki time.
+A daily schedule rebuilds everything at 06:15 local time.
 """
 
 import os
@@ -81,6 +81,10 @@ everything = define_asset_job("full_pipeline", selection="*")
 defs = Definitions(
     assets=[raw_events, bronze_lake, realtime_engine, warehouse],
     jobs=[everything],
-    schedules=[ScheduleDefinition(job=everything, cron_schedule="15 6 * * *", execution_timezone="Europe/Helsinki")],
+    schedules=[
+        ScheduleDefinition(
+            job=everything, cron_schedule="15 6 * * *", execution_timezone=os.environ.get("PELIVAHTI_TIMEZONE", "EET")
+        )
+    ],
     resources={"dbt": DbtCliResource(project_dir=dbt_project)},
 )

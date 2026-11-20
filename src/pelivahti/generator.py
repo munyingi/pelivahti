@@ -1,4 +1,4 @@
-"""Synthetic event generator for a Finnish-style betting and online casino operator.
+"""Synthetic event generator for a regulated betting and online casino operator.
 
 Everything is fake and seeded, so the same seed always gives the same file.
 The generator also simulates the transport layer on purpose:
@@ -21,44 +21,36 @@ from datetime import UTC, datetime, timedelta
 from decimal import ROUND_HALF_UP, Decimal
 from pathlib import Path
 
-MUNICIPALITIES = [
-    "Helsinki",
-    "Espoo",
-    "Tampere",
-    "Vantaa",
-    "Oulu",
-    "Turku",
-    "Jyväskylä",
-    "Lahti",
-    "Kuopio",
-    "Pori",
-    "Joensuu",
-    "Lappeenranta",
-    "Hämeenlinna",
-    "Vaasa",
-    "Seinäjoki",
-    "Rovaniemi",
-    "Kotka",
-    "Mikkeli",
+REGIONS = [
+    "North",
+    "South",
+    "East",
+    "West",
+    "Central",
+    "Capital",
+    "Coastal",
+    "Lakeside",
+    "Highlands",
+    "Islands",
 ]
 LEAGUES = {
-    ("ice_hockey", "Liiga"): [
-        "HIFK",
-        "Tappara",
-        "Kärpät",
-        "TPS",
-        "Ilves",
-        "Lukko",
-        "KalPa",
-        "JYP",
-        "Pelicans",
-        "SaiPa",
-        "HPK",
-        "Ässät",
-        "Jukurit",
-        "KooKoo",
-        "Sport",
-        "K-Espoo",
+    ("ice_hockey", "NHL"): [
+        "Bruins",
+        "Rangers",
+        "Maple Leafs",
+        "Canadiens",
+        "Penguins",
+        "Oilers",
+        "Avalanche",
+        "Lightning",
+        "Panthers",
+        "Stars",
+        "Kings",
+        "Golden Knights",
+        "Hurricanes",
+        "Devils",
+        "Jets",
+        "Wild",
     ],
     ("football", "Premier League"): [
         "Arsenal",
@@ -172,7 +164,7 @@ class Generator:
                 max(reg_time, self.cfg.start),
                 player_id=p.player_id,
                 birth_year=self.rng.randint(1950, 2006),
-                municipality=self.rng.choice(MUNICIPALITIES),
+                region=self.rng.choice(REGIONS),
                 daily_loss_limit_eur=p.daily_limit,
                 monthly_loss_limit_eur=p.monthly_limit,
             )
@@ -381,7 +373,7 @@ class Generator:
             base = self.cfg.start + timedelta(days=day)
             for _ in range(self.rng.choices([0, 1, 2, 3, 4], weights=self._poisson(per_day))[0]):
                 if p.profile == "at_risk" and self.rng.random() < 0.45:
-                    hour = self.rng.choice([21, 22, 23, 0, 1])  # UTC, i.e. late evening / night in Finland
+                    hour = self.rng.choice([21, 22, 23, 0, 1])  # UTC, i.e. late evening / night in local time (UTC+2)
                 else:
                     hour = self.rng.choice([5, 9, 10, 12, 14, 15, 16, 17, 18, 19, 20])
                 starts.append(base + timedelta(hours=hour, minutes=self.rng.randint(0, 59)))

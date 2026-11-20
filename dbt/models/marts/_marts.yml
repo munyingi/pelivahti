@@ -38,18 +38,18 @@ models:
       - name: round_id
         data_tests: [unique, not_null]
   - name: fct_ggr_daily
-    description: Gross gaming revenue per Helsinki business day and product.
+    description: Gross gaming revenue per local business day and product.
     data_tests:
       - unique_combination_of_columns:
           arguments:
             columns: [business_date, product]
-  - name: fct_lottery_tax_monthly
-    description: Estimated 22% lottery tax on positive monthly GGR per product. Illustrative only.
+  - name: fct_gambling_tax_monthly
+    description: Estimated 22% gambling tax on positive monthly GGR per product (rate is a dbt var). Illustrative only.
     columns:
       - name: tax_eur
         data_tests: [non_negative]
   - name: fct_player_daily
-    description: Batch truth per player per Helsinki day, including late events.
+    description: Batch truth per player per local day, including late events.
     data_tests:
       - unique_combination_of_columns:
           arguments:

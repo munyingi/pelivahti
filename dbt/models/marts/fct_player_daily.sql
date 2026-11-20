@@ -1,6 +1,6 @@
--- Batch truth for every player and Helsinki day, including late events the stream skipped.
+-- Batch truth for every player and local day, including late events the stream skipped.
 with movements as (
-    select *, {{ helsinki_date('at_utc') }} as business_date
+    select *, {{ local_date('at_utc') }} as business_date
     from {{ ref('int_wallet_movements') }}
 ),
 
@@ -27,8 +27,8 @@ limits as (
 with_day_end as (
     select
         *,
-        -- last instant of the Helsinki day, expressed in UTC
-        timezone('UTC', timezone('Europe/Helsinki', cast(business_date + 1 as timestamp))) - interval 1 microsecond
+        -- last instant of the local day, expressed in UTC
+        timezone('UTC', timezone('{{ var("business_timezone") }}', cast(business_date + 1 as timestamp))) - interval 1 microsecond
             as day_end_utc
     from daily
 )

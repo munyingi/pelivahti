@@ -1,8 +1,8 @@
 select
     s.*,
-    {{ to_helsinki('s.placed_at_utc') }} as placed_at_helsinki,
-    {{ helsinki_date('s.placed_at_utc') }} as placed_date,
-    {{ helsinki_date('s.settled_at_utc') }} as settled_date,
+    {{ to_local('s.placed_at_utc') }} as placed_at_local,
+    {{ local_date('s.placed_at_utc') }} as placed_date,
+    {{ local_date('s.settled_at_utc') }} as settled_date,
     m.sport,
     m.league,
     m.fixture,

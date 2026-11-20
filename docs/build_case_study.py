@@ -255,7 +255,7 @@ def main() -> None:
         "select product, sum(turnover_eur), sum(winnings_eur), sum(ggr_eur) from marts.fct_ggr_daily "
         "group by 1 order by 1"
     ).fetchall()
-    tax = dict(con.execute("select product, sum(tax_eur) from marts.fct_lottery_tax_monthly group by 1").fetchall())
+    tax = dict(con.execute("select product, sum(tax_eur) from marts.fct_gambling_tax_monthly group by 1").fetchall())
     alerts = con.execute("select rule, severity, count(*) from marts.fct_rg_alerts group by all").fetchall()
     tiers = dict(con.execute("select risk_tier, count(*) from marts.dim_players group by 1").fetchall())
     dq = dict(con.execute("select metric, value from reports.rpt_data_quality").fetchall())
@@ -276,7 +276,9 @@ def main() -> None:
     s = []
     s += [
         Paragraph("Pelivahti", H1),
-        Paragraph("Real-time betting settlement and responsible gaming pipeline for a Finnish-style operator", SUB),
+        Paragraph(
+            "Real-time betting settlement and responsible gaming pipeline for a regulated gambling operator", SUB
+        ),
         Paragraph(
             f"Case study by Samwel Munyingi, November 2026. All data is synthetic. Code: <link href='{REPO}' color='#2a78d6'>{REPO}</link>",
             SMALL,
@@ -288,7 +290,7 @@ def main() -> None:
             [
                 (compact(turnover), "turnover simulated"),
                 (compact(total_ggr), "gross gaming revenue"),
-                (compact(total_tax), "estimated lottery tax (22%)"),
+                (compact(total_tax), "estimated gambling tax (22%)"),
                 (f"{n_alerts:,}", "responsible gaming alerts"),
                 ("0.00", "EUR stream vs batch difference"),
             ]
@@ -297,16 +299,16 @@ def main() -> None:
     s += [
         Paragraph("The problem", H2),
         Paragraph(
-            "Finland ends the Veikkaus monopoly on online betting and casino games, and licensed operators may "
-            "start on 1 July 2027. Licensed gambling is taxed at 22% of the gambling margin (stakes minus "
-            "winnings). Every new operator needs three things from its data platform: money that is settled "
+            "A licensed betting and online casino operator moves real money on every event, corrects results after "
+            "payout, and must report revenue and gambling tax (modelled here as 22% of the gambling margin, stakes "
+            "minus winnings). It needs three things from its data platform: money that is settled "
             "correctly even when events arrive late, twice or broken; player protection rules that fire within "
             "seconds; and revenue and tax figures that can be proven.",
             BODY,
         ),
         Paragraph(
-            "Pelivahti (Finnish for <i>game watch</i>) builds that platform end to end with free tools. "
-            "A generator simulates 800 players over three days, about 87,000 messages across ten event types, "
+            "Pelivahti builds that platform end to end with free tools. "
+            "A generator simulates 800 players over three days, about 79,000 messages across ten event types, "
             "and deliberately damages the stream the way real transport does.",
             BODY,
         ),
@@ -393,11 +395,11 @@ def main() -> None:
             [
                 ["Rule", "Severity", "Window"],
                 ["Played while self-excluded", "critical", "none, checked even for late events"],
-                ["Daily or monthly loss limit breached", "high", "Helsinki calendar day or month"],
+                ["Daily or monthly loss limit breached", "high", "local calendar day or month"],
                 ["Loss chasing: deposit within 10 min of a loss, then 2x the usual stake", "high", "20 min sliding"],
                 ["Rapid deposits: 3 or more within 15 minutes", "medium", "15 min sliding"],
                 ["Night marathon: 90+ minute session touching 00:00 to 05:00", "medium", "session, 20 min gap"],
-                ["80% of the daily loss limit reached", "low", "Helsinki calendar day"],
+                ["80% of the daily loss limit reached", "low", "local calendar day"],
                 ["Bet accepted at stale odds (operations)", "medium", "odds valid at bet time"],
             ],
             [WIDTH * 0.56, WIDTH * 0.14, WIDTH * 0.30],

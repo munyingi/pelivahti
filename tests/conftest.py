@@ -9,7 +9,7 @@ import pytest
 
 from pelivahti.sources import Record
 
-T0 = datetime(2026, 11, 16, 10, 0, tzinfo=UTC)  # 12:00 in Helsinki
+T0 = datetime(2026, 11, 16, 10, 0, tzinfo=UTC)  # 12:00 local time (EET)
 
 
 def iso(ts: datetime) -> str:
@@ -43,7 +43,7 @@ class EventFactory:
             minutes,
             player_id=pid,
             birth_year=1990,
-            municipality="Helsinki",
+            region="North",
             daily_loss_limit_eur=daily,
             monthly_loss_limit_eur=monthly,
         )
