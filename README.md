@@ -163,6 +163,8 @@ tests/                 pytest: contracts, engine rules, exactly-once, Kafka end-
 
 ## Design choices and limits
 
+The full reasoning behind each choice, with the code and tests that enforce it, is in [`docs/decisions/`](docs/decisions).
+
 - **Python stream engine instead of Flink.** It implements the same semantics (event time, watermarks, keyed state, checkpoints tied to offsets) in about 500 readable lines that run anywhere, including CI. In production the same design maps to Flink with a transactional sink.
 - **One engine instance.** Settlement needs bets (keyed by player) and results (keyed by match) together. At scale you would partition by player and broadcast match results to every partition.
 - **Bronze dedupes on event_id.** Duplicates are counted, not stored, which keeps bronze small; a raw append-only landing zone would be the other option.
