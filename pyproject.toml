@@ -24,7 +24,7 @@ dependencies = [
 [project.optional-dependencies]
 dashboard = ["streamlit>=1.36", "plotly>=5.22", "pandas>=2.2"]
 orchestration = ["dagster>=1.8", "dagster-dbt>=0.24", "dagster-webserver>=1.8"]
-dev = ["pytest>=8", "ruff>=0.5"]
+dev = ["pytest>=8", "ruff>=0.5", "reportlab>=4", "pillow>=10"]
 
 [project.scripts]
 pelivahti = "pelivahti.cli:main"
@@ -43,3 +43,6 @@ ignore = ["B905"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 markers = ["kafka: needs a running Redpanda/Kafka broker (set KAFKA_BOOTSTRAP)"]
+
+[tool.ruff.lint.per-file-ignores]
+"docs/*" = ["E501"]  # long prose strings in the PDF builder

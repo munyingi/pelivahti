@@ -6,6 +6,8 @@
 
 Everything runs on free tools, on a laptop or in GitHub Actions. All players, bets and results are synthetic.
 
+📄 **[Read the 4-page case study (PDF)](docs/Pelivahti_case_study.pdf)** for the problem, architecture, design decisions and results.
+
 **Why this domain?** Finland ends Veikkaus' monopoly on online betting and casino games, and licensed operators may start on **1 July 2027**. Licensed gambling is taxed at **22% of the gambling margin** (stakes minus winnings). Every new operator will need exactly this: correct settlement, provable player protection and tax-ready numbers.
 
 ![Revenue and tax](docs/images/01_revenue_and_tax.png)
@@ -104,6 +106,18 @@ Notable tests: the stream and batch ledgers reconcile per player and per bet, th
 
 ![Data quality](docs/images/04_data_quality.png)
 
+## Dashboard
+
+Five tabs, built on the dbt marts. Screenshots from the default run (seed 42):
+
+| Revenue and tax | Responsible gaming |
+|---|---|
+| ![Revenue and tax](docs/images/01_revenue_and_tax.png) | ![Responsible gaming](docs/images/02_responsible_gaming.png) |
+| **Player drilldown** | **Data quality** |
+| ![Player drilldown](docs/images/03_player_drilldown.png) | ![Data quality](docs/images/04_data_quality.png) |
+| **Odds and matches** | |
+| ![Odds and matches](docs/images/05_odds_and_matches.png) | |
+
 ## Run it
 
 Requires Python 3.11+. Docker is only needed for the Kafka mode.
@@ -143,6 +157,7 @@ src/pelivahti/         generator, contracts, sources (file/Kafka), lakehouse, st
 dbt/                   dbt project (DuckDB + Delta plugin), macros, tests
 orchestration/         Dagster assets and schedule
 dashboard/             Streamlit app
+docs/                  case study PDF (rebuild: python docs/build_case_study.py), screenshots
 tests/                 pytest: contracts, engine rules, exactly-once, Kafka end-to-end
 ```
 
